@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const crypto = require('crypto');
 
-// Conexión a DB (Usará la variable de entorno que pondremos en Render)
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+// CÓDIGO NUEVO (Correcto)
+mongoose.connect(process.env.MONGO_URI);
 
 const StockSchema = new mongoose.Schema({
   symbol: { type: String, required: true },
