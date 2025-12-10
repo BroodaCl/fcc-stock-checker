@@ -1,19 +1,35 @@
 'use strict';
 require('dotenv').config();
-const express     = require('express');
-const bodyParser  = require('body-parser');
-const cors        = require('cors');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const helmet = require('helmet'); // <--- IMPORTANTE
 
-const apiRoutes         = require('./routes/api.js');
-const fccTestingRoutes  = require('./routes/fcctesting.js');
-const runner            = require('./test-runner');
+const apiRoutes = require('./routes/api.js');
+const fccTestingRoutes = require('./routes/fcctesting.js');
+const runner = require('./test-runner');
 
 const app = express();
 
+// --- SEGURIDAD HELMET (Requerido por FCC) ---
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
+    }
+  },
+  hidePoweredBy: true,
+  frameguard: { action: 'deny' },
+  xssFilter: true,
+  noSniff: true,
+  ieNoOpen: true,
+}));
+// --------------------------------------------
+
 app.use('/public', express.static(process.cwd() + '/public'));
-
-app.use(cors({origin: '*'})); //For FCC testing purposes only
-
+app.use(cors({origin: '*'})); //Para las pruebas de FCC
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -37,16 +53,17 @@ app.use(function(req, res, next) {
 });
 
 //Start our server and tests!
-const listener = app.listen(process.env.PORT || 3000, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+const port = process.env.PORT || 3000;
+app.listen(port, function () {
+  console.log("Listening on port " + port);
   if(process.env.NODE_ENV==='test') {
     console.log('Running Tests...');
     setTimeout(function () {
       try {
         runner.run();
       } catch(e) {
-        console.log('Tests are not valid:');
-        console.error(e);
+          console.log('Tests are not valid:');
+          console.error(e);
       }
     }, 3500);
   }
